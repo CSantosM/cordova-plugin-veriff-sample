@@ -1,22 +1,24 @@
-import { Component } from "@angular/core";
-import { Platform } from "ionic-angular";
+import { Component } from '@angular/core';
+import { Platform } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { catchError } from "rxjs/operators/catchError";
+import { catchError } from "rxjs/operators";
 
 declare var VERIFF;
 
 @Component({
-  selector: "page-home",
-  templateUrl: "home.html",
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
 })
+
 export class HomePage {
 
   constructor(
     private platform: Platform,
     private httpClient: HttpClient
-  ) {}
+  ) { }
 
-  private API_KEY = "your-api-key";
+  private API_KEY = ""; // your-api-key
   private VERIFF_URL = "https://api.veriff.me/v1/sessions/";
   private body = {
     verification: {
@@ -39,10 +41,15 @@ export class HomePage {
 
   veriff() {
     this.platform.ready().then(async () => {
-      const session = await this.createVeriffSession();
-      VERIFF.start(session.verification.url).then((code) => {
-        console.log("Code: ", code);
-      });
+      if (!!this.API_KEY) {
+        const session = await this.createVeriffSession();
+        VERIFF.start(session.verification.url).then((result: { message: string, status: string }) => {
+          console.log("Result: ", result);
+        }).catch(err => console.error(err));
+      } else {
+        console.error("API KEY MUST BE FILLED");
+      }
+
     });
   }
 
@@ -51,7 +58,7 @@ export class HomePage {
       const body = JSON.stringify(this.body);
       const options = {
         headers: new HttpHeaders({
-          "X-AUTH-CLIENT" : this.API_KEY,
+          "X-AUTH-CLIENT": this.API_KEY,
           "Content-Type": "application/json",
         }),
       };
@@ -69,4 +76,5 @@ export class HomePage {
         });
     });
   }
+
 }
